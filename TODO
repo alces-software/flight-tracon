@@ -1,0 +1,21 @@
+Service-side
+============
+√ Add `flight:quota` value to master via flight attendant
+√ Add error messages (quota exceeded, no such queue, no such cluster etc.)
+√ Solidify domain usage (i.e. replace `markt-dev`)
+√ Solidify key specification (i.e. use env vars)
+Deployment planning
+Add ability to create 'custom' autoscaling groups? Maybe this better as server-side tweaks?
+√ Add authentication/restriction to own clusters (`flight:identity` key? deal with via domain?)
+√ Prevent race condition w/queues -- thread pool?
+
+Cluster-side
+============
+Cluster-side CLI tool for adding/removing queues/nodes
+√ Rework autoscaling to use tracon (both scale-up and scale-down)
+Remove ability to perform autoscaling group modification from master node
+
+
+Queries and mutation require an identity for the domain (root-only)
+Mutation requires a key for the cluster (root-only)
+
