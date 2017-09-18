@@ -3,7 +3,7 @@ require 'active_support/core_ext/module/delegation'
 
 Aws.config.update(
   {
-    region: 'eu-west-1',
+    region: ENV['AWS_REGION'] || 'eu-west-1',
     credentials: Aws::Credentials.new(ENV['AWS_ACCESS_KEY_ID'], ENV['AWS_SECRET_ACCESS_KEY'])
   }
 )

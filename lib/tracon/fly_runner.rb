@@ -54,6 +54,8 @@ module Tracon
       end
       if @fly_config.region.present?
         extra_args << '--region' << @fly_config.region
+      else
+        extra_args << '--region' << (ENV['AWS_REGION'] || 'eu-west-1')
       end
       if @parameter_dir
         extra_args << '--parameter-directory' << @parameter_dir
