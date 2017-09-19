@@ -14,6 +14,7 @@ module Tracon
       @access_key = ENV['AWS_ACCESS_KEY_ID']
       @secret_key = ENV['AWS_SECRET_ACCESS_KEY']
       @template_set = ENV['FLY_TEMPLATE_SET']
+      @key_pair = ENV['FLY_KEY_PAIR']
     end
 
     def queue_name
