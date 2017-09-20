@@ -19,6 +19,41 @@ module Tracon
         type: 'c4.8xlarge-36C-60GB',
         cu_per_node: 20,
         bid: '0',
+      },
+      'gpu-pilot' => {
+        type: 'g2.2xlarge',
+        cu_per_node: 5,
+        bid: '0.702',
+      },
+      'gpu-economy' => {
+        type: 'p2.8xlarge',
+        cu_per_node: 40,
+        bid: '7.776',
+      },
+      'gpu-durable' => {
+        type: 'p2.8xlarge',
+        cu_per_node: 80,
+        bid: '0',
+      },
+      'highmem-economy' => {
+        type: 'r4.8xlarge',
+        cu_per_node: 15,
+        bid: '2.371',
+      },
+      'highmem-durable' => {
+        type: 'r4.8xlarge',
+        cu_per_node: 30,
+        bid: '0',
+      },
+      'balanced-economy' => {
+        type: 'm4.10xlarge',
+        cu_per_node: 15,
+        bid: '2.220',
+      },
+      'balanced-durable' => {
+        type: 'm4.10xlarge',
+        cu_per_node: 30,
+        bid: '0',
       }
     }
 
