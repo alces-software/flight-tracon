@@ -14,6 +14,14 @@ module Tracon
       cluster_data[:parameters]['ClusterName'] || @qualified_name
     end
 
+    def scheduler_type
+      cluster_data[:parameters]['SchedulerType']
+    end
+
+    def flight_profile_bucket
+      cluster_data[:parameters]['FlightProfileBucket']
+    end
+
     def cu_in_use
       queues.reduce(0) do |memo, queue|
         memo += queue.current_cu
