@@ -49,7 +49,7 @@ module Tracon
       if @fly_config.template_set.present? && @command != 'delq'
         extra_args << '--template-set' << @fly_config.template_set
       end
-      if @fly_config.key_pair.present?
+      if @fly_config.key_pair.present? && @command != 'delq'
         extra_args << '--key-pair' << @fly_config.key_pair
       end
       if @fly_config.region.present?
