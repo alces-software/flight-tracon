@@ -144,9 +144,12 @@ module Tracon
           id: stack.stack_id,
           name: stack.stack_name,
           ctime: stack.creation_time,
+          parameters: {}.tap do |h|
+            stack.parameters.each {|p| h[p.parameter_key] = p.parameter_value}
+          end,
           tags: {}.tap do |h|
             stack.tags.each {|tag| h[tag.key] = tag.value}
-          end
+          end,
         }
       end
 

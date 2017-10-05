@@ -38,6 +38,7 @@ module Tracon
         'ComputeMaxNodes' => @max,
         'ComputeInstanceTypeOther' => @queue.type,
         'ComputeInstanceType' => 'other',
+        'ClusterName' => @queue.cluster.name,
         # XXX Min nodes!
       }
     end

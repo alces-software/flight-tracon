@@ -51,15 +51,15 @@ module Tracon
       end
 
       def started(cluster)
-        pool["#{cluster.name}.#{cluster.domain}"] = true
+        pool["#{cluster.qualified_name}.#{cluster.domain}"] = true
       end
 
       def completed(cluster)
-        pool["#{cluster.name}.#{cluster.domain}"] = false
+        pool["#{cluster.qualified_name}.#{cluster.domain}"] = false
       end
 
       def in_progress?(cluster)
-        pool["#{cluster.name}.#{cluster.domain}"] == true
+        pool["#{cluster.qualified_name}.#{cluster.domain}"] == true
       end
 
       private

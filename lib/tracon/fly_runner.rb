@@ -64,7 +64,7 @@ module Tracon
         ENV['FLY_EXE_PATH'],
         'cluster',
         @command,
-        @fly_config.cluster_name,
+        @fly_config.qualified_cluster_name,
         @fly_config.queue_name,
         '--domain', @fly_config.domain,
         '--access-key', @fly_config.access_key,

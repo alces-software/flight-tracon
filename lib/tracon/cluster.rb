@@ -1,11 +1,17 @@
 module Tracon
   class Cluster
     attr_accessor :domain
-    attr_accessor :name
+    attr_accessor :qualified_name
 
-    def initialize(domain, name)
+    def initialize(domain, qualified_name)
       @domain = domain
-      @name = name
+      # The cluster name, possibly qualified with a hash such as when launched
+      # by Flight Launch.
+      @qualified_name = qualified_name
+    end
+
+    def name
+      cluster_data[:parameters]['ClusterName'] || @qualified_name
     end
 
     def cu_in_use
@@ -20,11 +26,11 @@ module Tracon
 
     private
     def cluster_data
-      @cluster_data ||= AWS.cluster(@domain, @name)
+      @cluster_data ||= AWS.cluster(@domain, @qualified_name)
     end
 
     def queues
-      @queues ||= AWS.queues(@domain, @name).map do |queue_data|
+      @queues ||= AWS.queues(@domain, @qualified_name).map do |queue_data|
         Queue.new(queue_data[:spec], @cluster, queue_data)
       end
     end
