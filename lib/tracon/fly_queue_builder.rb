@@ -32,12 +32,16 @@ module Tracon
     end
 
     def overrides
+      cluster = @queue.cluster
       {
         'ComputeSpotPrice' => @queue.bid,
         'ComputeInitialNodes' => @desired,
         'ComputeMaxNodes' => @max,
         'ComputeInstanceTypeOther' => @queue.type,
         'ComputeInstanceType' => 'other',
+        'ClusterName' => cluster.name,
+        'FlightProfileBucket' => cluster.flight_profile_bucket,
+        'SchedulerType' => cluster.scheduler_type,
         # XXX Min nodes!
       }
     end

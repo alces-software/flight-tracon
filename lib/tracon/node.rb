@@ -17,7 +17,7 @@ module Tracon
 
     private
     def node_data
-      @node_data ||= AWS.node(@queue.cluster.domain, @queue.cluster.name, @queue.name, @name)
+      @node_data ||= AWS.node(@queue.cluster.domain, @queue.cluster.qualified_name, @queue.name, @name)
     end
   end
 end

@@ -24,5 +24,9 @@ module Tracon
     def cluster_name
       @cluster.name
     end
+
+    def qualified_cluster_name
+      @cluster.qualified_name
+    end
   end
 end

@@ -76,7 +76,7 @@ module Tracon
     end
 
     def queue_data
-      @queue_data ||= AWS.queue(@cluster.domain, @cluster.name, @name)
+      @queue_data ||= AWS.queue(@cluster.domain, @cluster.qualified_name, @name)
     end
 
     def run_fly(runner)
