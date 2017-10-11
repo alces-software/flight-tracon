@@ -15,6 +15,7 @@ module Tracon
       @secret_key = ENV['AWS_SECRET_ACCESS_KEY']
       @template_set = ENV['FLY_TEMPLATE_SET']
       @key_pair = ENV['FLY_KEY_PAIR']
+      @region = Thread.current[:aws_region] || 'eu-west-1'
     end
 
     def queue_name
