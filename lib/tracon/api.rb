@@ -13,6 +13,7 @@ module Tracon
 
     namespace :clusters do
       http_basic do |username, password|
+        Thread.current[:aws_region] = env['HTTP_X_AWS_REGION'] || 'eu-west-1'
         Engine.valid_credentials?(username, password).tap do
           @cluster, @domain = username.split('.')
           if @domain.nil?

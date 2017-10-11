@@ -154,11 +154,15 @@ module Tracon
       end
 
       def cfn
-        @cfn ||= Aws::CloudFormation::Client.new
+        (@cfn ||= Hash.new do |h,k|
+          Aws::CloudFormation::Client.new(region: Thread.current[:aws_region])
+        end)[Thread.current[:aws_region]]
       end
 
       def autoscaling
-        @autoscaling ||= Aws::AutoScaling::Client.new
+        (@autoscaling ||= Hash.new do |h,k|
+          Aws::AutoScaling::Client.new(region: Thread.current[:aws_region])
+        end)[Thread.current[:aws_region]]
       end
     end
   end
