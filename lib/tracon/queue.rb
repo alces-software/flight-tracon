@@ -89,20 +89,21 @@ module Tracon
       @exists ||= queue_data.present? && queue_data.key?(:id)
     end
 
-    def update(desired, min, max)
+    def update(desired, min, max, &block)
       AWS.update_queue(queue_data, desired, min, max)
+      block.call unless block.nil?
       # XXX
       # FlyRunner.new('modq', nil, fly_config).perform
     end
 
-    def create(desired, min, max)
+    def create(desired, min, max, &block)
       parameter_dir = FlyQueueBuilder.new(self, desired, min, max).perform
       runner = FlyRunner.new('addq', parameter_dir, fly_config)
-      run_fly(runner)
+      run_fly(runner, &block)
     end
 
-    def destroy
-      run_fly(FlyRunner.new('delq', nil, fly_config))
+    def destroy(&block)
+      run_fly(FlyRunner.new('delq', nil, fly_config), &block)
     end
 
     private
@@ -114,7 +115,7 @@ module Tracon
       @queue_data ||= AWS.queue(@cluster.domain, @cluster.qualified_name, @name)
     end
 
-    def run_fly(runner)
+    def run_fly(runner, &block)
       t = Thread.new do
         Engine.started(@cluster)
         begin
@@ -122,6 +123,7 @@ module Tracon
           puts runner.stdout
           puts runner.stderr
           puts runner.arn
+          block.call unless block.nil?
         rescue
           STDERR.puts $!.message
           STDERR.puts $!.backtrace.join("\n")

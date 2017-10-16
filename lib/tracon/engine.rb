@@ -1,4 +1,5 @@
 require 'tracon/cluster'
+require 'tracon/credit_usage'
 require 'tracon/queue'
 require 'tracon/node'
 require 'digest/md5'
@@ -74,6 +75,7 @@ module Tracon
       def initialize(params)
         @cluster = Cluster.new(params[:domain], params[:cluster])
         @queue = Queue.new(params[:queue], @cluster)
+        @credit_usage = CreditUsage.new(@cluster)
         @desired = params[:desired].to_i
         @min = params[:min].to_i
         @max = params[:max].to_i
@@ -120,8 +122,10 @@ module Tracon
         if valid?
           # create queue params file
           # use fly to launch queue
-          @queue.create(@desired, @min, @max)
-          # update record of cu in use for this hour?
+          @queue.create(@desired, @min, @max) do
+            # If the queue is created, record new credit usage.
+            @credit_usage.create()
+          end
         else
           false
         end
@@ -134,6 +138,7 @@ module Tracon
       def initialize(params)
         @cluster = Cluster.new(params[:domain], params[:cluster])
         @queue = Queue.new(params[:queue], @cluster)
+        @credit_usage = CreditUsage.new(@cluster)
         @errors = []
       end
 
@@ -152,7 +157,10 @@ module Tracon
       def process
         if valid?
           # use fly to destroy queue
-          @queue.destroy
+          @queue.destroy do
+            # If the queue is destroyed, record new credit usage.
+            @credit_usage.create()
+          end
           true
         else
           false
@@ -166,6 +174,7 @@ module Tracon
       def initialize(params)
         @cluster = Cluster.new(params[:domain], params[:cluster])
         @queue = Queue.new(params[:queue], @cluster)
+        @credit_usage = CreditUsage.new(@cluster)
         @desired = params[:desired].to_i
         @min = params[:min].to_i
         @max = params[:max].to_i
@@ -207,7 +216,10 @@ module Tracon
       def process
         if valid?
           # use fly to update queue
-          @queue.update(@desired, @min, @max)
+          @queue.update(@desired, @min, @max) do
+            # If the queue is updated, record new credit usage.
+            @credit_usage.create()
+          end
           true
         else
           false
@@ -222,6 +234,7 @@ module Tracon
         @cluster = Cluster.new(params[:domain], params[:cluster])
         @queue = Queue.new(params[:queue], @cluster)
         @node = Node.new(params[:node], @queue)
+        @credit_usage = CreditUsage.new(@cluster)
         @errors = []
       end
 
@@ -244,6 +257,8 @@ module Tracon
             @errors << 'already min size'
             false
           else
+            # The node has been shot.  Record new credit usage.
+            @credit_usage.create()
             true
           end
         else
