@@ -39,7 +39,7 @@ module Tracon
 
     def queues
       @queues ||= AWS.queues(@domain, @qualified_name).map do |queue_data|
-        Queue.new(queue_data[:spec], @cluster, queue_data)
+        Queue.new(queue_data[:spec], self, queue_data)
       end
     end
   end
