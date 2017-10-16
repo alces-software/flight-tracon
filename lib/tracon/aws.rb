@@ -42,13 +42,9 @@ module Tracon
 
       def cluster_token(domain, cluster_name)
         res = describe_stacks(stack_name: "flight-#{domain}-#{cluster_name}-master")
-        c = res.stacks[0].outputs.find do |output|
-          output.output_key == "ConfigurationResult"
-        end
-        JSON.parse(c.output_value).values.first.split(';').find do |v|
-          key, value = v.split('=')
-          return value if key == 'Token'
-        end
+        cr = configuration_result(res.stacks[0])
+        return nil if cr.nil?
+        cr['Token']
       rescue Aws::CloudFormation::Errors::ValidationError
         # doesn't exist
         nil
@@ -116,6 +112,18 @@ module Tracon
       end
       
       private
+
+      def configuration_result(stack)
+        c = stack.outputs.find do |output|
+          output.output_key == "ConfigurationResult"
+        end
+        JSON.parse(c.output_value).values.first.split(';').inject({}) do |h, v|
+          key, value = v.split('=')
+          h[key] = value
+          h
+        end
+      end
+
       def asgs
         [].tap do |a|
           res = describe_auto_scaling_groups
@@ -154,6 +162,7 @@ module Tracon
           id: stack.stack_id,
           name: stack.stack_name,
           ctime: stack.creation_time,
+          configuration_result: configuration_result(stack),
           parameters: {}.tap do |h|
             stack.parameters.each {|p| h[p.parameter_key] = p.parameter_value}
           end,

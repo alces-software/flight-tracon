@@ -14,6 +14,10 @@ module Tracon
       cluster_data[:parameters]['ClusterName'] || @qualified_name
     end
 
+    def uuid
+      cluster_data[:configuration_result]['UUID']
+    end
+
     def scheduler_type
       cluster_data[:parameters]['SchedulerType']
     end
