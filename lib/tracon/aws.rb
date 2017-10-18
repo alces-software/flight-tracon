@@ -61,7 +61,8 @@ module Tracon
 
       def queue(domain, cluster_name, queue_name)
         queues(domain, cluster_name).find do |group|
-          group[:name].start_with?("flight-#{domain}-#{cluster_name}-compute-#{queue_name}-")
+          group[:name].start_with?("flight-#{domain}-#{cluster_name}-compute-#{queue_name}-") ||
+            group[:label] == queue_name
         end || nil
       end
 
@@ -135,8 +136,11 @@ module Tracon
           spec: queue_spec,
           current: asg.desired_capacity,
           max: asg.max_size,
-          min: asg.min_size,
-        }
+          min: asg.min_size
+        }.tap do |q|
+          label_tag = asg.tags.find {|tag| tag.key == 'AutoscalingGroupLabel'}
+          q[:label] = label_tag.value if label_tag
+        end
       end
 
       def cluster_from_stack(stack)
