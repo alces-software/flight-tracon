@@ -116,7 +116,11 @@ module Tracon
     end
 
     def run_fly(runner, &block)
-      t = Thread.new do
+      # Copy across the aws_region thread local variable as the block may make
+      # use of it.
+      region = Thread.current[:aws_region]
+      t = Thread.new(region) do |r|
+        Thread.current[:aws_region] = r
         Engine.started(@cluster)
         begin
           runner.perform
