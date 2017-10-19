@@ -79,7 +79,13 @@ module Tracon
 
       def nodes(domain, cluster_name, queue_name)
         asg = asgs.find do |asg|
-          asg.auto_scaling_group_name.start_with?("flight-#{domain}-#{cluster_name}-compute-#{queue_name}")
+          label_tag = asg.tags.find {|tag| tag.key == 'AutoscalingGroupLabel'}
+          spec = label_tag.value if label_tag
+          asg.auto_scaling_group_name.start_with?("flight-#{domain}-#{cluster_name}-compute-#{queue_name}") ||
+            (
+              asg.auto_scaling_group_name.start_with?("flight-#{domain}-#{cluster_name}-compute-") &&
+              queue_name == spec
+            )
         end
         if asg
           asg.instances.map(&method(:node_from_asg_instance))
