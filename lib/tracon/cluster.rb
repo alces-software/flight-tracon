@@ -36,15 +36,15 @@ module Tracon
       @cu_max ||= cluster_data[:tags]['flight:quota'].to_i
     end
 
-    private
-    def cluster_data
-      @cluster_data ||= AWS.cluster(@domain, @qualified_name)
-    end
-
     def queues
       @queues ||= AWS.queues(@domain, @qualified_name).map do |queue_data|
         Queue.new(queue_data[:spec], self, queue_data)
       end
+    end
+
+    private
+    def cluster_data
+      @cluster_data ||= AWS.cluster(@domain, @qualified_name)
     end
   end
 end
