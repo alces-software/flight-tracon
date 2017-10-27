@@ -26,8 +26,8 @@ module Tracon
       cluster_data[:parameters]['FlightProfileBucket']
     end
 
-    def cu_in_use
-      queues.reduce(0) do |memo, queue|
+    def cu_in_use(reload: false)
+      queues(reload: reload).reduce(0) do |memo, queue|
         memo += queue.current_cu
       end
     end
@@ -36,7 +36,8 @@ module Tracon
       @cu_max ||= cluster_data[:tags]['flight:quota'].to_i
     end
 
-    def queues
+    def queues(reload: false)
+      @queues = nil if reload
       @queues ||= AWS.queues(@domain, @qualified_name).map do |queue_data|
         Queue.new(queue_data[:spec], self, queue_data)
       end

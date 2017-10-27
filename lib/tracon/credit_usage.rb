@@ -15,7 +15,7 @@ module Tracon
         id: nil,
         type: 'creditUsages',
         attributes: {
-          cuInUse: @cluster.cu_in_use,
+          cuInUse: @cluster.cu_in_use(reload: true),
         },
         relationships: {
           'cluster': {
