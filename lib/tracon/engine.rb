@@ -138,11 +138,11 @@ module Tracon
       def initialize(params)
         @cluster = Cluster.new(params[:domain], params[:cluster])
         if params[:all_queues]
-          @queues = @cluster.queues
           @named_queue = false
+          @queues = @cluster.queues
         else
-          @queues = [Queue.new(params[:queue], @cluster)]
           @named_queue = true
+          @queue = Queue.new(params[:queue], @cluster)
         end
         @credit_usage = CreditUsage.new(@cluster)
         @errors = []
@@ -153,7 +153,7 @@ module Tracon
           @errors << 'operation in progress'
           return false
         end
-        if @named_queue && !@queues.first.exists?
+        if @named_queue && !@queue.exists?
           @errors << 'queue not found'
           return false
         end
@@ -163,9 +163,14 @@ module Tracon
       def process
         if valid?
           # use fly to destroy the queues
-          @queues.each do |queue|
-            queue.destroy do
-              # If a queue is destroyed, record new credit usage.
+          if @named_queue
+            @queue.destroy do
+              # If the queue is destroyed, record new credit usage.
+              @credit_usage.create()
+            end
+          else
+            Queue.destroy_queues(@cluster, @queues) do
+              # When all queues are destroyed, record new credit usage.
               @credit_usage.create()
             end
           end

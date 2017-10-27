@@ -60,6 +60,28 @@ module Tracon
     UNKNOWN_SPEC = {}.freeze
 
     attr_accessor :name, :spec, :cluster
+    attr_reader :run_fly_thread
+
+    class << self
+      def destroy_queues(cluster, queues, &block)
+        Thread.new do
+          Engine.started(cluster)
+          begin
+            queues.each do |queue|
+              queue.destroy(skip_engine_update: true)
+            end
+            threads = queues.map {|q| q.run_fly_thread}
+            threads.each {|t| t.join}
+            block.call unless block.nil?
+          rescue
+            STDERR.puts $!.message
+            STDERR.puts $!.backtrace.join("\n")
+          ensure
+            Engine.completed(cluster)
+          end
+        end
+      end
+    end
 
     def initialize(name, cluster, queue_data = nil)
       @name = name
@@ -102,8 +124,12 @@ module Tracon
       run_fly(runner, &block)
     end
 
-    def destroy(&block)
-      run_fly(FlyRunner.new('delq', nil, fly_config), &block)
+    def destroy(skip_engine_update: false, &block)
+      run_fly(
+        FlyRunner.new('delq', nil, fly_config),
+        skip_engine_update: skip_engine_update,
+        &block
+      )
     end
 
     private
@@ -115,13 +141,13 @@ module Tracon
       @queue_data ||= AWS.queue(@cluster.domain, @cluster.qualified_name, @name)
     end
 
-    def run_fly(runner, &block)
+    def run_fly(runner, skip_engine_update: false, &block)
       # Copy across the aws_region thread local variable as the block may make
       # use of it.
       region = Thread.current[:aws_region]
-      t = Thread.new(region) do |r|
+      @run_fly_thread = Thread.new(region) do |r|
         Thread.current[:aws_region] = r
-        Engine.started(@cluster)
+        Engine.started(@cluster) unless skip_engine_update
         begin
           runner.perform
           puts runner.stdout
@@ -132,10 +158,11 @@ module Tracon
           STDERR.puts $!.message
           STDERR.puts $!.backtrace.join("\n")
         ensure
-          Engine.completed(@cluster)
+          @run_fly_thread = nil
+          Engine.completed(@cluster) unless skip_engine_update
         end
       end
-      if t.join(2)
+      if @run_fly_thread.join(2)
         !runner.failed?
       else
         # didn't fail after 2s, so we assume that background
