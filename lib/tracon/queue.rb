@@ -64,7 +64,11 @@ module Tracon
 
     class << self
       def destroy_queues(cluster, queues, &block)
-        Thread.new do
+        # Copy across the aws_region thread local variable as the block may make
+        # use of it.
+        region = Thread.current[:aws_region]
+        Thread.new(region) do |r|
+          Thread.current[:aws_region] = r
           Engine.started(cluster)
           begin
             queues.each do |queue|

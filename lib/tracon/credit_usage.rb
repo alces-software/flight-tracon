@@ -11,8 +11,7 @@ module Tracon
     end
     
     def create
-      resource = JSONAPI::Resource.new(
-        id: nil,
+      JSONAPI::Resource.create(credit_usage_url, {
         type: 'creditUsages',
         attributes: {
           cuInUse: @cluster.cu_in_use(reload: true),
@@ -22,8 +21,7 @@ module Tracon
             data: { type: 'clusters', id: @cluster.uuid }
           }
         }
-      )
-      resource.create(credit_usage_url)
+      })
     end
 
     private
