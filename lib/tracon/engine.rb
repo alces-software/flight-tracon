@@ -69,6 +69,29 @@ module Tracon
       end
     end
 
+    class CreditChecker
+      attr_reader :errors
+
+      def initialize(cluster)
+        @errors = []
+        @cluster = cluster
+      end
+
+      # If the cluster consumes credits, check that the cluster's user has
+      # enough credits.
+      def valid?
+        launch_cluster = JSONAPI::Resource.load_launch_cluster(@cluster)
+        if launch_cluster && launch_cluster.attributes.consumesCredits
+          owner = launch_cluster.load_relationship(:owner)
+          if owner && !(owner.attributes.computeCredits > 0)
+            @errors << 'credits exhausted'
+            return false
+          end
+        end
+        true
+      end
+    end
+
     class Creator
       attr_reader :errors
 
@@ -118,13 +141,10 @@ module Tracon
 
         # If the cluster consumes credits, check that the cluster's user has
         # enough credits.
-        launch_cluster = JSONAPI::Resource.load_launch_cluster(@cluster)
-        if launch_cluster && launch_cluster.attributes.consumesCredits
-          owner = launch_cluster.load_relationship(:owner)
-          if owner && !(owner.attributes.computeCredits > 0)
-            @errors << 'credits exhausted'
-            return false
-          end
+        cc = CreditChecker.new(@cluster)
+        unless cc.valid?
+          @errors += cc.errors
+          return false
         end
 
         true
@@ -240,13 +260,10 @@ module Tracon
         # cost for a Flight Launch cluster, check that the cluster's owner, if
         # any, has enough credits.
         if cu_desired > 0
-          launch_cluster = JSONAPI::Resource.load_launch_cluster(@cluster)
-          if launch_cluster && launch_cluster.attributes.consumesCredits
-            owner = launch_cluster.load_relationship(:owner)
-            if owner && !(owner.attributes.computeCredits > 0)
-              @errors << 'credits exhausted'
-              return false
-            end
+          cc = CreditChecker.new(@cluster)
+          unless cc.valid?
+            @errors += cc.errors
+            return false
           end
         end
 
