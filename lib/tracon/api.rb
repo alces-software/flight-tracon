@@ -45,6 +45,25 @@ module Tracon
             Tracon::AWS.queues(@domain, params[:cluster])
           end
 
+          desc 'Remove all queues for cluster.'
+          delete do
+            if @cluster != params[:cluster]
+              status 401
+              return
+            end
+            destroyer = Engine.destroyer(params.merge(domain: @domain, all_queues: true))
+            if !destroyer.process
+              status 403
+              {
+                status: 'fail',
+                errors: destroyer.errors
+              }
+            else
+              status 204
+              ''
+            end
+          end
+
           route_param :queue do
             desc 'Show a queue.'
             get do

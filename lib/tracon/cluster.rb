@@ -14,6 +14,10 @@ module Tracon
       cluster_data[:parameters]['ClusterName'] || @qualified_name
     end
 
+    def uuid
+      cluster_data[:configuration_result]['UUID']
+    end
+
     def scheduler_type
       cluster_data[:parameters]['SchedulerType']
     end
@@ -22,8 +26,8 @@ module Tracon
       cluster_data[:parameters]['FlightProfileBucket']
     end
 
-    def cu_in_use
-      queues.reduce(0) do |memo, queue|
+    def cu_in_use(reload: false)
+      queues(reload: reload).reduce(0) do |memo, queue|
         memo += queue.current_cu
       end
     end
@@ -32,15 +36,16 @@ module Tracon
       @cu_max ||= cluster_data[:tags]['flight:quota'].to_i
     end
 
-    private
-    def cluster_data
-      @cluster_data ||= AWS.cluster(@domain, @qualified_name)
-    end
-
-    def queues
+    def queues(reload: false)
+      @queues = nil if reload
       @queues ||= AWS.queues(@domain, @qualified_name).map do |queue_data|
         Queue.new(queue_data[:spec], self, queue_data)
       end
+    end
+
+    private
+    def cluster_data
+      @cluster_data ||= AWS.cluster(@domain, @qualified_name)
     end
   end
 end
