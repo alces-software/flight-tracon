@@ -9,51 +9,61 @@ module Tracon
         type: 'c4.large-2C-3.75GB',
         bid: '0.113',
         cu_per_node: 1,
+        description: 'A general-pilot queue',
       },
       'general-economy' => {
         type: 'c4.8xlarge-36C-60GB',
         bid: '1.811',
         cu_per_node: 10,
+        description: 'A general-economy queue',
       },
       'general-durable' => {
         type: 'c4.8xlarge-36C-60GB',
         cu_per_node: 20,
         bid: '0',
+        description: 'A general-durable queue',
       },
       'gpu-pilot' => {
         type: 'g2.2xlarge-1GPU-8C-15GB',
         cu_per_node: 5,
         bid: '0.702',
+        description: 'A gpu-pilot queue',
       },
       'gpu-economy' => {
         type: 'p2.8xlarge-8GPU-32C-488GB',
         cu_per_node: 40,
         bid: '7.776',
+        description: 'A gpu-economy queue',
       },
       'gpu-durable' => {
         type: 'p2.8xlarge-8GPU-32C-488GB',
         cu_per_node: 80,
         bid: '0',
+        description: 'A gpu-durable queue',
       },
       'highmem-economy' => {
         type: 'r4.8xlarge-32C-244GB',
         cu_per_node: 15,
         bid: '2.371',
+        description: 'A highmem-economy queue',
       },
       'highmem-durable' => {
         type: 'r4.8xlarge-32C-244GB',
         cu_per_node: 30,
         bid: '0',
+        description: 'A highmem-durable queue',
       },
       'balanced-economy' => {
         type: 'm4.10xlarge-40C-160GB',
         cu_per_node: 15,
         bid: '2.220',
+        description: 'A balanced-economy queue',
       },
       'balanced-durable' => {
         type: 'm4.10xlarge-40C-160GB',
         cu_per_node: 30,
         bid: '0',
+        description: 'A balanced-durable queue',
       }
     }
 
