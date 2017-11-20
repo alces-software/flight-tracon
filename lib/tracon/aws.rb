@@ -117,6 +117,7 @@ module Tracon
         c = stack.outputs.find do |output|
           output.output_key == "ConfigurationResult"
         end
+        return nil if c.nil?
         JSON.parse(c.output_value).values.first.split(';').inject({}) do |h, v|
           key, value = v.split('=')
           h[key] = value
