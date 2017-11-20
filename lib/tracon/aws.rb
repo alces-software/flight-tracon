@@ -170,6 +170,13 @@ module Tracon
           tags: {}.tap do |h|
             stack.tags.each {|tag| h[tag.key] = tag.value}
           end,
+          outputs: {}.tap do |h|
+            stack.outputs.each do |output|
+              unless output.output_key == 'ConfigurationResult'
+                h[output.output_key] = output.output_value
+              end
+            end
+          end,
         }
       end
 
