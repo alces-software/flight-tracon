@@ -15,6 +15,7 @@ module Tracon
     end
 
     def uuid
+      return nil if cluster_data[:configuration_result].nil?
       cluster_data[:configuration_result]['UUID']
     end
 

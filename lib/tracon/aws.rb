@@ -117,6 +117,7 @@ module Tracon
         c = stack.outputs.find do |output|
           output.output_key == "ConfigurationResult"
         end
+        return nil if c.nil?
         JSON.parse(c.output_value).values.first.split(';').inject({}) do |h, v|
           key, value = v.split('=')
           h[key] = value
@@ -168,6 +169,13 @@ module Tracon
           end,
           tags: {}.tap do |h|
             stack.tags.each {|tag| h[tag.key] = tag.value}
+          end,
+          outputs: {}.tap do |h|
+            stack.outputs.each do |output|
+              unless output.output_key == 'ConfigurationResult'
+                h[output.output_key] = output.output_value
+              end
+            end
           end,
         }
       end

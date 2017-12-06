@@ -50,8 +50,12 @@ module Tracon
         end
 
         def parse(json_string)
-          data = JSON.parse(json_string, object_class: OpenStruct).data
-          self.new(data)
+          document = JSON.parse(json_string, object_class: OpenStruct)
+          if document.data
+            self.new(document.data)
+          else
+            puts "Unable to create JSONAPI::Resource: no data in response document #{document.inspect}"
+          end
         end
       end
 

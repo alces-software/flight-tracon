@@ -6,13 +6,8 @@ module Tracon
   class API < Grape::API
     format :json
 
-    head '/ping' do
-      status 204
-      ''
-    end
-
-    namespace :clusters do
-      http_basic do |username, password|
+    helpers do
+      def basic_auth(username, password)
         Thread.current[:aws_region] = env['HTTP_X_AWS_REGION'] || 'eu-west-1'
         Engine.valid_credentials?(username, password).tap do
           @cluster, @domain = username.split('.')
@@ -21,6 +16,28 @@ module Tracon
             @cluster = nil
           end
         end
+      end
+    end
+
+    head '/ping' do
+      status 204
+      ''
+    end
+
+    namespace :queues do
+      http_basic do |username, password|
+        basic_auth(username, password)
+      end
+
+      desc 'Show all available queues.'
+      get do
+        Tracon::Queue::TYPES
+      end
+    end
+
+    namespace :clusters do
+      http_basic do |username, password|
+        basic_auth(username, password)
       end
 
       desc 'Show all clusters.'
