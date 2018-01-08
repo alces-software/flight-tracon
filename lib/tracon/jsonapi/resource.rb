@@ -33,7 +33,7 @@ module Tracon
         end
 
         def load_launch_cluster(cluster)
-          base_url = ENV['FlightLaunchEndpoint']
+          base_url = ENV['LAUNCH_API_BASE_URL']
           link = "#{base_url}/api/v1/clusters/#{cluster.uuid}"
           load_resource(link)
         rescue OpenURI::HTTPError
@@ -45,7 +45,8 @@ module Tracon
         end
 
         def load_resource(link)
-          self.parse(open(link).read)
+          uri = URI(link)
+          self.parse(uri.open.read)
         end
 
         def parse(json_string)
