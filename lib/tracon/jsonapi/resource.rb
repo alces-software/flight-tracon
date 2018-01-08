@@ -45,7 +45,7 @@ module Tracon
         end
 
         def load_resource(link)
-          self.parse(open(uri.to_s).read)
+          self.parse(open(link).read)
         end
 
         def parse(json_string)
