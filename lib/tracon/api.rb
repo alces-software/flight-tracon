@@ -24,6 +24,11 @@ module Tracon
       ''
     end
 
+    get '/ping' do
+      status 204
+      ''
+    end
+
     namespace :queues do
       http_basic do |username, password|
         basic_auth(username, password)
