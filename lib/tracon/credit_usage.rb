@@ -14,7 +14,7 @@ module Tracon
       JSONAPI::Resource.create(credit_usage_url, {
         type: 'creditUsages',
         attributes: {
-          cuInUse: @cluster.cu_in_use(reload: true),
+          queuesCuInUse: @cluster.cu_in_use(reload: true),
         },
         relationships: {
           'cluster': {
