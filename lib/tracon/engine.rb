@@ -1,4 +1,5 @@
 require 'tracon/cluster'
+require 'tracon/credit_checker'
 require 'tracon/credit_usage'
 require 'tracon/queue'
 require 'tracon/node'
@@ -66,29 +67,6 @@ module Tracon
       private
       def pool
         @pool ||= {}
-      end
-    end
-
-    class CreditChecker
-      attr_reader :errors
-
-      def initialize(cluster)
-        @errors = []
-        @cluster = cluster
-      end
-
-      # If the cluster consumes credits, check that the cluster's user has
-      # enough credits.
-      def valid?
-        launch_cluster = JSONAPI::Resource.load_launch_cluster(@cluster)
-        if launch_cluster && launch_cluster.attributes.consumesCredits
-          owner = launch_cluster.load_relationship(:owner)
-          if owner && !(owner.attributes.computeCredits > 0)
-            @errors << 'credits exhausted'
-            return false
-          end
-        end
-        true
       end
     end
 
