@@ -16,6 +16,7 @@ module Tracon
       return false if owner.nil?
 
       validate_owner_has_compute_credits
+      validate_cluster_is_not_in_grace_period
 
       @errors.empty?
     end
@@ -35,6 +36,12 @@ module Tracon
     def validate_owner_has_compute_credits
       unless owner.attributes.computeCredits > 0
         @errors << 'credits exhausted'
+      end
+    end
+
+    def validate_cluster_is_not_in_grace_period
+      if @launch_cluster.attributes.gracePeriodExpiresAt
+        @errors << 'grace period active'
       end
     end
   end
