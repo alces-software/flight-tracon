@@ -1,5 +1,7 @@
 require 'tracon/cluster'
+require 'tracon/compute_unit_consumption_validator'
 require 'tracon/credit_usage'
+require 'tracon/quota_validator'
 require 'tracon/queue'
 require 'tracon/node'
 require 'digest/md5'
@@ -24,6 +26,8 @@ module Tracon
         else
           # verify for cluster
           token = AWS.cluster_token(domain, cluster)
+          # XXX If token is nil then the cluster is gone.  We should probably
+          # return a better error code than 401 Unauthorized in that case.
           STDERR.puts token
           token == password
         end
@@ -69,29 +73,6 @@ module Tracon
       end
     end
 
-    class CreditChecker
-      attr_reader :errors
-
-      def initialize(cluster)
-        @errors = []
-        @cluster = cluster
-      end
-
-      # If the cluster consumes credits, check that the cluster's user has
-      # enough credits.
-      def valid?
-        launch_cluster = JSONAPI::Resource.load_launch_cluster(@cluster)
-        if launch_cluster && launch_cluster.attributes.consumesCredits
-          owner = launch_cluster.load_relationship(:owner)
-          if owner && !(owner.attributes.computeCredits > 0)
-            @errors << 'credits exhausted'
-            return false
-          end
-        end
-        true
-      end
-    end
-
     class Creator
       attr_reader :errors
 
@@ -131,17 +112,15 @@ module Tracon
           @errors << 'unknown queue spec'
           return false
         end
-        # calculate number of compute units this queue will cost
-        cu_desired = @desired * @queue.cu_per_node
-        # compare to number of compute units currently in use (other queue current levels)
-        unless @cluster.cu_max == 0 || @cluster.cu_in_use + cu_desired <= @cluster.cu_max
-          @errors << 'quota exceeded'
+
+        # Ensure that the clusters quota, if any, is not going to be exceeded.
+        qc = QuotaValidator.new(@cluster, @desired, @queue)
+        unless qc.valid?
+          @errors += qc.errors
           return false
         end
 
-        # If the cluster consumes credits, check that the cluster's user has
-        # enough credits.
-        cc = CreditChecker.new(@cluster)
+        cc = ComputeUnitConsumptionValidator.new(@cluster, @desired, @queue)
         unless cc.valid?
           @errors += cc.errors
           return false
@@ -248,23 +227,18 @@ module Tracon
           @errors << 'minimum larger than requested size'
           return false
         end
-        # calculate number of compute units this queue will cost
-        cu_desired = (@desired - @queue.size) * @queue.cu_per_node
-        # compare to number of compute units currently in use (other queue current levels)
-        unless @cluster.cu_max == 0 || @cluster.cu_in_use + cu_desired <= @cluster.cu_max
-          @errors << 'quota exceeded'
+
+        # Ensure that the clusters quota, if any, is not going to be exceeded.
+        qc = QuotaValidator.new(@cluster, @desired, @queue)
+        unless qc.valid?
+          @errors += qc.errors
           return false
         end
 
-        # If we're increasing the number of compute units this queue will
-        # cost for a Flight Launch cluster, check that the cluster's owner, if
-        # any, has enough credits.
-        if cu_desired > 0
-          cc = CreditChecker.new(@cluster)
-          unless cc.valid?
-            @errors += cc.errors
-            return false
-          end
+        cc = ComputeUnitConsumptionValidator.new(@cluster, @desired, @queue)
+        unless cc.valid?
+          @errors += cc.errors
+          return false
         end
 
         true

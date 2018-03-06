@@ -2,7 +2,7 @@ require 'json'
 require 'open-uri'
 require 'ostruct'
 
-require 'tracon/jsonapi/resource'
+require 'tracon/jsonapi'
 
 module Tracon
   class CreditUsage
@@ -11,7 +11,7 @@ module Tracon
     end
     
     def create
-      JSONAPI::Resource.create(credit_usage_url, {
+      JSONAPI.create(credit_usage_url, {
         type: 'creditUsages',
         attributes: {
           queuesCuInUse: @cluster.cu_in_use(reload: true),
