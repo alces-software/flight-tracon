@@ -26,6 +26,8 @@ module Tracon
         else
           # verify for cluster
           token = AWS.cluster_token(domain, cluster)
+          # XXX If token is nil then the cluster is gone.  We should probably
+          # return a better error code than 401 Unauthorized in that case.
           STDERR.puts token
           token == password
         end
@@ -120,7 +122,7 @@ module Tracon
 
         # If the cluster consumes credits, check that the cluster's user has
         # enough credits.
-        cc = CreditChecker.new(@cluster)
+        cc = CreditChecker.new(@cluster, @desired, @queue)
         unless cc.valid?
           @errors += cc.errors
           return false
@@ -235,15 +237,12 @@ module Tracon
           return false
         end
 
-        # If we're increasing the number of compute units this queue will
-        # cost for a Flight Launch cluster, check that the cluster's owner, if
-        # any, has enough credits.
-        if cu_desired > 0
-          cc = CreditChecker.new(@cluster)
-          unless cc.valid?
-            @errors += cc.errors
-            return false
-          end
+        # If the cluster consumes credits, check that the cluster's user has
+        # enough credits.
+        cc = CreditChecker.new(@cluster, @desired, @queue)
+        unless cc.valid?
+          @errors += cc.errors
+          return false
         end
 
         true
