@@ -10,7 +10,7 @@ module Tracon
     # If the cluster consumes credits, check that the cluster's user has
     # enough credits.
     def valid?
-      @launch_cluster = JSONAPI::Resource.load_launch_cluster(@cluster)
+      @launch_cluster = JSONAPI.load_launch_cluster(@cluster).resource
       return true if @launch_cluster.nil?
       return true unless using_ongoing_credits?
       return false if owner.nil?
@@ -24,13 +24,13 @@ module Tracon
     private
 
     def using_ongoing_credits?
-      payment = @launch_cluster.load_relationship(:payment)
+      payment = @launch_cluster.load_relationship(:payment).resource
       return false if payment.nil?
       payment.attributes.paymentMethod == 'credits:ongoing'
     end
 
     def owner
-      @owner ||= @launch_cluster.load_relationship(:owner)
+      @owner ||= @launch_cluster.load_relationship(:owner).resource
     end
 
     def validate_owner_has_compute_credits
