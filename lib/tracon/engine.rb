@@ -1,6 +1,7 @@
 require 'tracon/cluster'
 require 'tracon/credit_checker'
 require 'tracon/credit_usage'
+require 'tracon/quota_checker'
 require 'tracon/queue'
 require 'tracon/node'
 require 'digest/md5'
@@ -109,11 +110,11 @@ module Tracon
           @errors << 'unknown queue spec'
           return false
         end
-        # calculate number of compute units this queue will cost
-        cu_desired = @desired * @queue.cu_per_node
-        # compare to number of compute units currently in use (other queue current levels)
-        unless @cluster.cu_max == 0 || @cluster.cu_in_use + cu_desired <= @cluster.cu_max
-          @errors << 'quota exceeded'
+
+        # Ensure that the clusters quota, if any, is not going to be exceeded.
+        qc = QuotaChecker.new(@cluster, @desired, @queue)
+        unless qc.valid?
+          @errors += qc.errors
           return false
         end
 
@@ -226,11 +227,11 @@ module Tracon
           @errors << 'minimum larger than requested size'
           return false
         end
-        # calculate number of compute units this queue will cost
-        cu_desired = (@desired - @queue.size) * @queue.cu_per_node
-        # compare to number of compute units currently in use (other queue current levels)
-        unless @cluster.cu_max == 0 || @cluster.cu_in_use + cu_desired <= @cluster.cu_max
-          @errors << 'quota exceeded'
+
+        # Ensure that the clusters quota, if any, is not going to be exceeded.
+        qc = QuotaChecker.new(@cluster, @desired, @queue)
+        unless qc.valid?
+          @errors += qc.errors
           return false
         end
 
