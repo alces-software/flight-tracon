@@ -55,8 +55,10 @@ module Tracon
     end
 
     def validate_owner_has_compute_credits
-      unless owner.attributes.computeCredits > 0
-        @errors << 'credits exhausted'
+      if owner.attributes.computeCredits <= 0
+        @errors << 'compute units exhausted'
+      elsif owner.attributes.computeCredits < minimum_credits_required
+        @errors << 'compute units insufficient'
       end
     end
 
@@ -70,11 +72,10 @@ module Tracon
     # consume, check that there will still be `minimum_runtime` available to
     # the cluster afterwards.
     def validate_cluster_limit
-      min_credits = (cu_in_use_afterwards * minimum_runtime / 60).ceil
       credit_limit = payment.attributes.maxCreditUsage
       return if credit_limit.nil?
       credits_available = credit_limit - credits_used
-      if credits_available < min_credits
+      if credits_available < minimum_credits_required
         @errors << 'compute unit limit insufficient'
       end
     end
@@ -99,8 +100,8 @@ module Tracon
       end
     end
 
-    def cu_in_use_afterwards
-      @cluster.cu_in_use + cu_desired
+    def minimum_credits_required
+      ((@cluster.cu_in_use + cu_desired) * minimum_runtime / 60).ceil
     end
 
     def minimum_runtime
