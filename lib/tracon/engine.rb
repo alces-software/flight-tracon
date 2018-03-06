@@ -1,7 +1,7 @@
 require 'tracon/cluster'
-require 'tracon/compute_unit_consumption_checker'
+require 'tracon/compute_unit_consumption_validator'
 require 'tracon/credit_usage'
-require 'tracon/quota_checker'
+require 'tracon/quota_validator'
 require 'tracon/queue'
 require 'tracon/node'
 require 'digest/md5'
@@ -114,13 +114,13 @@ module Tracon
         end
 
         # Ensure that the clusters quota, if any, is not going to be exceeded.
-        qc = QuotaChecker.new(@cluster, @desired, @queue)
+        qc = QuotaValidator.new(@cluster, @desired, @queue)
         unless qc.valid?
           @errors += qc.errors
           return false
         end
 
-        cc = ComputeUnitConsumptionChecker.new(@cluster, @desired, @queue)
+        cc = ComputeUnitConsumptionValidator.new(@cluster, @desired, @queue)
         unless cc.valid?
           @errors += cc.errors
           return false
@@ -229,13 +229,13 @@ module Tracon
         end
 
         # Ensure that the clusters quota, if any, is not going to be exceeded.
-        qc = QuotaChecker.new(@cluster, @desired, @queue)
+        qc = QuotaValidator.new(@cluster, @desired, @queue)
         unless qc.valid?
           @errors += qc.errors
           return false
         end
 
-        cc = ComputeUnitConsumptionChecker.new(@cluster, @desired, @queue)
+        cc = ComputeUnitConsumptionValidator.new(@cluster, @desired, @queue)
         unless cc.valid?
           @errors += cc.errors
           return false

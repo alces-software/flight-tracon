@@ -1,11 +1,11 @@
 module Tracon
-  # For clusters which consume flight platform compute units, checks that:
+  # For clusters which consume flight platform compute units, validates that:
   #
   #  1. the user has sufficient compute units
   #  2. the cluster is not in a grace period
   #  3. the cluster's compute unit limit, if any, will not be exceeded
   #
-  class ComputeUnitConsumptionChecker
+  class ComputeUnitConsumptionValidator
     attr_reader :errors
 
     def initialize(cluster, desired, queue)
@@ -66,8 +66,8 @@ module Tracon
     end
 
     # If we're increasing the number of compute units the cluster will
-    # consume, check that there will still be `minimum_runtime` available to
-    # the cluster afterwards.
+    # consume, validate that there will still be `minimum_runtime` available
+    # to the cluster afterwards.
     def validate_cluster_limit
       compute_unit_limit = payment.attributes.maxCreditUsage
       return if compute_unit_limit.nil?

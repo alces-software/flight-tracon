@@ -1,9 +1,7 @@
 module Tracon
-
-  # For clusters which have a quota for their queue usage, check that the
+  # For clusters which have a quota for their queue usage, validate that the
   # quota won't be exceeded.
-  #
-  class QuotaChecker
+  class QuotaValidator
     attr_reader :errors
 
     def initialize(cluster, desired, queue)
