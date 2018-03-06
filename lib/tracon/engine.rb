@@ -1,5 +1,5 @@
 require 'tracon/cluster'
-require 'tracon/credit_checker'
+require 'tracon/compute_unit_consumption_checker'
 require 'tracon/credit_usage'
 require 'tracon/quota_checker'
 require 'tracon/queue'
@@ -120,9 +120,7 @@ module Tracon
           return false
         end
 
-        # If the cluster consumes credits, check that the cluster's user has
-        # enough credits.
-        cc = CreditChecker.new(@cluster, @desired, @queue)
+        cc = ComputeUnitConsumptionChecker.new(@cluster, @desired, @queue)
         unless cc.valid?
           @errors += cc.errors
           return false
@@ -237,9 +235,7 @@ module Tracon
           return false
         end
 
-        # If the cluster consumes credits, check that the cluster's user has
-        # enough credits.
-        cc = CreditChecker.new(@cluster, @desired, @queue)
+        cc = ComputeUnitConsumptionChecker.new(@cluster, @desired, @queue)
         unless cc.valid?
           @errors += cc.errors
           return false

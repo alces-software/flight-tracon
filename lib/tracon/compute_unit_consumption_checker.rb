@@ -1,12 +1,11 @@
 module Tracon
-
-  # For clusters which consume flight launch credits, checks that:
+  # For clusters which consume flight platform compute units, checks that:
   #
-  #  1. the user has sufficient credits
+  #  1. the user has sufficient compute units
   #  2. the cluster is not in a grace period
-  #  3. the cluster's credit limit, if any, will not be exceeded
+  #  3. the cluster's compute unit limit, if any, will not be exceeded
   #
-  class CreditChecker
+  class ComputeUnitConsumptionChecker
     attr_reader :errors
 
     def initialize(cluster, desired, queue)
@@ -16,15 +15,13 @@ module Tracon
       @queue = queue
     end
 
-    # If the cluster consumes credits, check that the cluster's user has
-    # enough credits.
     def valid?
       return true if decreasing_cu_usage?
       return true if launch_cluster.nil?
       return true unless using_ongoing_credits?
       return false if owner.nil?
 
-      validate_owner_has_compute_credits
+      validate_owner_has_sufficient_compute_units
       validate_cluster_is_not_in_grace_period
       validate_cluster_limit
 
@@ -54,10 +51,10 @@ module Tracon
       @payment ||= launch_cluster.load_relationship(:payment).resource
     end
 
-    def validate_owner_has_compute_credits
+    def validate_owner_has_sufficient_compute_units
       if owner.attributes.computeCredits <= 0
         @errors << 'compute units exhausted'
-      elsif owner.attributes.computeCredits < minimum_credits_required
+      elsif owner.attributes.computeCredits < minimum_compute_units_required
         @errors << 'compute units insufficient'
       end
     end
@@ -72,15 +69,15 @@ module Tracon
     # consume, check that there will still be `minimum_runtime` available to
     # the cluster afterwards.
     def validate_cluster_limit
-      credit_limit = payment.attributes.maxCreditUsage
-      return if credit_limit.nil?
-      credits_available = credit_limit - credits_used
-      if credits_available < minimum_credits_required
+      compute_unit_limit = payment.attributes.maxCreditUsage
+      return if compute_unit_limit.nil?
+      compute_units_available = compute_unit_limit - compute_units_used
+      if compute_units_available < minimum_compute_units_required
         @errors << 'compute unit limit insufficient'
       end
     end
 
-    def credits_used
+    def compute_units_used
       credit_usages = launch_cluster.load_relationship(:creditUsages, {
         'page[offset]' => 0,
         'page[limit]' => 0,
@@ -100,7 +97,7 @@ module Tracon
       end
     end
 
-    def minimum_credits_required
+    def minimum_compute_units_required
       ((@cluster.cu_in_use + cu_desired) * minimum_runtime / 60).ceil
     end
 
