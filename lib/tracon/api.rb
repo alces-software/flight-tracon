@@ -62,6 +62,16 @@ module Tracon
         end
 
         namespace :queues do
+          before do
+            if @domain == Tracon::SOLO_CLUSTER_DOMAIN
+              error!({
+                error: "422 Unprocessable Entity",
+                message: 'Not supported for solo clusters',
+              },
+              422)
+            end
+          end
+
           desc 'Show all queues for cluster.'
           get do
             Tracon::AWS.queues(@domain, params[:cluster])

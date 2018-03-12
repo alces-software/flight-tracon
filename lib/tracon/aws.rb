@@ -33,7 +33,9 @@ module Tracon
       end
 
       def cluster(domain, cluster_name)
-        res = describe_stacks(stack_name: "flight-#{domain}-#{cluster_name}-master")
+        stack_name = "flight-#{domain}-#{cluster_name}"
+        stack_name = "#{stack_name}-master" unless domain == Tracon::SOLO_CLUSTER_DOMAIN
+        res = describe_stacks(stack_name: stack_name)
         cluster_from_stack(res.stacks[0])
       rescue Aws::CloudFormation::Errors::ValidationError
         # doesn't exist
@@ -41,7 +43,9 @@ module Tracon
       end
 
       def cluster_token(domain, cluster_name)
-        res = describe_stacks(stack_name: "flight-#{domain}-#{cluster_name}-master")
+        stack_name = "flight-#{domain}-#{cluster_name}"
+        stack_name = "#{stack_name}-master" unless domain == Tracon::SOLO_CLUSTER_DOMAIN
+        res = describe_stacks(stack_name: stack_name)
         cr = configuration_result(res.stacks[0])
         return nil if cr.nil?
         cr['Token']
