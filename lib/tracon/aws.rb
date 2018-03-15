@@ -18,6 +18,7 @@ module Tracon
       delegate :describe_stacks, to: :cfn
       
       def clusters(domain)
+        flight_type = Tracon.solo_domain?(domain) ? 'solo' : 'master'
         [].tap do |a|
           res = describe_stacks
           a.concat(res.stacks)
@@ -27,14 +28,14 @@ module Tracon
           end
         end.map(&method(:cluster_from_stack))
           .select do |stack|
-          stack[:tags]['flight:type'] == 'master' &&
+          stack[:tags]['flight:type'] == flight_type &&
             stack[:name].start_with?("flight-#{domain}-")
         end
       end
 
       def cluster(domain, cluster_name)
         stack_name = "flight-#{domain}-#{cluster_name}"
-        stack_name = "#{stack_name}-master" unless domain == Tracon::SOLO_CLUSTER_DOMAIN
+        stack_name = "#{stack_name}-master" unless Tracon.solo_domain?(domain)
         res = describe_stacks(stack_name: stack_name)
         cluster_from_stack(res.stacks[0])
       rescue Aws::CloudFormation::Errors::ValidationError
@@ -44,7 +45,7 @@ module Tracon
 
       def cluster_token(domain, cluster_name)
         stack_name = "flight-#{domain}-#{cluster_name}"
-        stack_name = "#{stack_name}-master" unless domain == Tracon::SOLO_CLUSTER_DOMAIN
+        stack_name = "#{stack_name}-master" unless Tracon.solo_domain?(domain)
         res = describe_stacks(stack_name: stack_name)
         cr = configuration_result(res.stacks[0])
         return nil if cr.nil?
