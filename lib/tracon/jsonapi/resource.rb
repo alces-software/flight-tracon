@@ -3,11 +3,12 @@ module Tracon
     class Resource
       attr_reader :id, :type, :attributes, :relationships
 
-      def initialize(params)
+      def initialize(params, document)
         @id = params[:id]
         @type = params[:type]
         @attributes = params[:attributes]
         @relationships = params[:relationships]
+        @document = document
       end
 
       def load_relationship(relation_name, query={})
@@ -22,7 +23,17 @@ module Tracon
           uri.query = URI.encode_www_form(query)
         end
 
-        JSONAPI.load_document(uri)
+        JSONAPI.load_document(uri, user: auth_user, password: auth_password)
+      end
+
+      private
+
+      def auth_user
+        @document.auth_user
+      end
+
+      def auth_password
+        @document.auth_password
       end
     end
   end

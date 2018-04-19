@@ -11,17 +11,22 @@ module Tracon
     end
     
     def create
-      JSONAPI.create(credit_usage_url, {
-        type: 'creditUsages',
-        attributes: {
-          queuesCuInUse: @cluster.cu_in_use(reload: true),
-        },
-        relationships: {
-          'cluster': {
-            data: { type: 'clusters', id: @cluster.uuid }
+      JSONAPI.create(
+        credit_usage_url,
+        {
+          type: 'creditUsages',
+          attributes: {
+            queuesCuInUse: @cluster.cu_in_use(reload: true),
+          },
+          relationships: {
+            'cluster': {
+              data: { type: 'clusters', id: @cluster.uuid }
+            }
           }
-        }
-      })
+        },
+        user: @cluster.uuid,
+        password: @cluster.token
+      )
     end
 
     private

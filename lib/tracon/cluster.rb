@@ -14,6 +14,11 @@ module Tracon
       cluster_data[:parameters]['ClusterName'] || @qualified_name
     end
 
+    def token
+      return nil if cluster_data[:configuration_result].nil?
+      cluster_data[:configuration_result]['Token']
+    end
+
     def uuid
       return nil if cluster_data[:configuration_result].nil?
       cluster_data[:configuration_result]['UUID']
