@@ -21,14 +21,18 @@ module Tracon
         if cluster.nil?
           # XXX verify for domain only.
           input = "#{domain}:#{PEPPER}"
-          STDERR.puts Base64.encode64(Digest::MD5.digest(input)).inspect
+          if ENV['LOG_CREDENTIALS'] == 'true'
+            STDERR.puts Base64.encode64(Digest::MD5.digest(input)).inspect
+          end
           Base64.encode64(Digest::MD5.digest(input)).chomp == password
         else
           # verify for cluster
           token = AWS.cluster_token(domain, cluster)
           # XXX If token is nil then the cluster is gone.  We should probably
           # return a better error code than 401 Unauthorized in that case.
-          STDERR.puts token
+          if ENV['LOG_CREDENTIALS'] == 'true'
+            STDERR.puts token
+          end
           token == password
         end
       end
