@@ -37,12 +37,6 @@ module Tracon
         end
       end
 
-      def old_valid_credentials?(username, password)
-        input = "#{password[0..7]}:#{username}:#{PEPPER}"
-        STDERR.puts Base64.encode64(Digest::MD5.digest(input)).inspect
-        Base64.encode64(Digest::MD5.digest(input)).chomp == password[8..-1]
-      end
-
       def creator(params)
         Creator.new(params)
       end
