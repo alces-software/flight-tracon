@@ -175,7 +175,6 @@ module Tracon
           runner.perform
           puts runner.stdout
           puts runner.stderr
-          puts runner.arn
           block.call unless block.nil?
         rescue
           STDERR.puts $!.message
