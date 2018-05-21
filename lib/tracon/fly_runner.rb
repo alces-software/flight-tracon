@@ -24,16 +24,13 @@ module Tracon
                 :stdout,
                 :stderr
 
-    def initialize(command, parameter_dir, fly_config)
-      @command = command
-      @parameter_dir = parameter_dir
-      @fly_config = fly_config
+    def initialize(fly_params)
+      @fly_params = fly_params
     end
 
     def perform
-      cmd, env = build_command_and_environment
-      log_cmd(cmd, env)
-      launch_with_popen3(cmd, env)
+      log_params
+      launch_with_popen3
     end
 
     def failed?
@@ -44,40 +41,9 @@ module Tracon
       arn.nil? && @exit_status.nil?
     end
 
-    def build_command_and_environment
-      extra_args = []
-      if @fly_config.template_set.present?
-        extra_args << '--template-set' << @fly_config.template_set
-      end
-      if @fly_config.key_pair.present?
-        extra_args << '--key-pair' << @fly_config.key_pair
-      end
-      if @fly_config.region.present?
-        extra_args << '--region' << @fly_config.region
-      end
-      if @parameter_dir
-        extra_args << '--parameter-directory' << @parameter_dir
-      end
-      cmd = [
-        ENV['FLY_EXE_PATH'],
-        'cluster',
-        @command,
-        @fly_config.qualified_cluster_name,
-        @fly_config.queue_name,
-        '--domain', @fly_config.domain,
-        '--access-key', @fly_config.access_key,
-        '--secret-key', @fly_config.secret_key,
-        *extra_args,
-      ]
-
-      env = {
-        "FLY_SIMPLE_OUTPUT" => "true"
-      }
-
-      [cmd, env]
-    end
-
-    def launch_with_popen3(cmd, env)
+    def launch_with_popen3
+      cmd = @fly_params.cmd
+      env = @fly_params.env
       @exit_status = Open3.popen3(env, *cmd) do |stdin, stdout, stderr, wait_thr|
         stdin.close
         stdout_bytes_read = read_arn(stdout, wait_thr)
@@ -105,11 +71,8 @@ module Tracon
       stdout_read
     end
 
-    def log_cmd(cmd, env)
-      sanitized_cmd = cmd.map do |i|
-        (i == @fly_config.access_key || i == @fly_config.secret_key) ? '[REDACTED]' : i
-      end
-      puts "Running command #{sanitized_cmd.inspect} in env #{env.inspect}"
+    def log_cmd
+      puts "Running command #{@fly_params.sanitized_cmd.inspect} in env #{@fly_params.env.inspect}"
     end
   end
 end
