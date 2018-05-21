@@ -143,14 +143,14 @@ module Tracon
 
     def create(desired, min, max, &block)
       parameter_dir = FlyQueueBuilder.new(self, desired, min, max).perform
-      fly_config = FlyConfig::CreateQueueBuilder.new(@cluster, self, parameter_dir).build
+      fly_config = FlyConfig.new(@cluster, self, parameter_dir)
       fly_params = FlyConfigSerializer::CreateQueueSerializer.new(fly_config).serialize
       runner = FlyRunner.new(fly_params)
       run_fly(runner, &block)
     end
 
     def destroy(skip_engine_update: false, &block)
-      fly_config = FlyConfig::DestroyQueueBuilder.new(@cluster, self).build
+      fly_config = FlyConfig.new(@cluster, self)
       fly_params = FlyConfigSerializer::DestroyQueueSerializer.new(fly_config).serialize
       run_fly(
         FlyRunner.new(fly_params),
