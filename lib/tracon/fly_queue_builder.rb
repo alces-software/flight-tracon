@@ -26,7 +26,7 @@ module Tracon
     def merge_overrides
       puts "Merging overrides for 'cluster-compute' parameters"
       params = YAML.load_file(File.join(parameter_dir, "cluster-compute.yml"))
-      new_params = params.merge(overrides)
+      new_params = params.merge(overrides.slice(*params.keys))
       File.write(File.join(@parameter_dir, "cluster-compute.yml.bak"), params.to_yaml)
       File.write(File.join(@parameter_dir, "cluster-compute.yml"), new_params.to_yaml)
     end

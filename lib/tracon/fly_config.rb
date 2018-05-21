@@ -13,7 +13,7 @@ module Tracon
     attr_accessor :secret_key
     attr_accessor :template_set
 
-    def initialize(cluster, queue, parameter_dir=nil)
+    def initialize(cluster, queue, parameter_dir:nil, template_set:nil)
       @access_key = ENV['AWS_ACCESS_KEY_ID']
       @cluster_name = cluster.name
       @domain = cluster.domain
@@ -24,7 +24,7 @@ module Tracon
       @queue_name = queue.name
       @region = Thread.current[:aws_region] || ENV['AWS_REGION'] || 'eu-west-1'
       @secret_key = ENV['AWS_SECRET_ACCESS_KEY']
-      @template_set = ENV['FLY_TEMPLATE_SET']
+      @template_set = template_set || ENV['FLY_TEMPLATE_SET']
     end
   end
 end

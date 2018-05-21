@@ -82,6 +82,7 @@ module Tracon
         @min = params[:min].to_i
         @max = params[:max].to_i
         @max = @desired if @desired > @max
+        @template_set = params[:template_set]
         @errors = []
       end
 
@@ -131,7 +132,7 @@ module Tracon
         if valid?
           # create queue params file
           # use fly to launch queue
-          @queue.create(@desired, @min, @max) do
+          @queue.create(@desired, @min, @max, @template_set) do
             # If the queue is created, record new credit usage.
             @credit_usage.create()
           end
