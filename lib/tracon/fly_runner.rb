@@ -46,16 +46,14 @@ module Tracon
 
     def build_command_and_environment
       extra_args = []
-      if @fly_config.template_set.present? && @command != 'delq'
+      if @fly_config.template_set.present?
         extra_args << '--template-set' << @fly_config.template_set
       end
-      if @fly_config.key_pair.present? && @command != 'delq'
+      if @fly_config.key_pair.present?
         extra_args << '--key-pair' << @fly_config.key_pair
       end
       if @fly_config.region.present?
         extra_args << '--region' << @fly_config.region
-      else
-        extra_args << '--region' << (ENV['AWS_REGION'] || 'eu-west-1')
       end
       if @parameter_dir
         extra_args << '--parameter-directory' << @parameter_dir

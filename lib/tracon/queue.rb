@@ -144,11 +144,13 @@ module Tracon
 
     def create(desired, min, max, &block)
       parameter_dir = FlyQueueBuilder.new(self, desired, min, max).perform
+      fly_config = FlyConfig::CreateQueueBuilder.new(@cluster, self).build
       runner = FlyRunner.new('addq', parameter_dir, fly_config)
       run_fly(runner, &block)
     end
 
     def destroy(skip_engine_update: false, &block)
+      fly_config = FlyConfig::DestroyQueueBuilder.new(@cluster, self).build
       run_fly(
         FlyRunner.new('delq', nil, fly_config),
         skip_engine_update: skip_engine_update,
@@ -157,10 +159,6 @@ module Tracon
     end
 
     private
-    def fly_config
-      FlyConfig.new(@cluster, self)
-    end
-
     def queue_data
       @queue_data ||= AWS.queue(@cluster.domain, @cluster.qualified_name, @name)
     end

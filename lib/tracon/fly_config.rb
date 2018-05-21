@@ -11,16 +11,44 @@ module Tracon
     attr_accessor :secret_key
     attr_accessor :template_set
 
-    def initialize(cluster, queue)
-      @domain = cluster.domain
+    def initialize
       @access_key = ENV['AWS_ACCESS_KEY_ID']
       @secret_key = ENV['AWS_SECRET_ACCESS_KEY']
-      @template_set = ENV['FLY_TEMPLATE_SET']
-      @key_pair = ENV['FLY_KEY_PAIR']
-      @region = Thread.current[:aws_region] || 'eu-west-1'
-      @queue_name = queue.name
-      @cluster_name = cluster.name
-      @qualified_cluster_name = cluster.qualified_name
+      @region = Thread.current[:aws_region] || ENV['AWS_REGION'] || 'eu-west-1'
+    end
+
+    class CreateQueueBuilder
+      def initialize(cluster, queue)
+        @cluster = cluster
+        @queue = queue
+      end
+
+      def build
+        FlyConfig.new.tap do |config|
+          config.key_pair = ENV['FLY_KEY_PAIR']
+          config.template_set = ENV['FLY_TEMPLATE_SET']
+          config.domain = @cluster.domain
+          config.queue_name = @queue.name
+          config.cluster_name = @cluster.name
+          config.qualified_cluster_name = @cluster.qualified_name
+        end
+      end
+    end
+
+    class DestroyQueueBuilder
+      def initialize(cluster, queue)
+        @cluster = cluster
+        @queue = queue
+      end
+
+      def build
+        FlyConfig.new.tap do |config|
+          config.domain = @cluster.domain
+          config.queue_name = @queue.name
+          config.cluster_name = @cluster.name
+          config.qualified_cluster_name = @cluster.qualified_name
+        end
+      end
     end
   end
 end
