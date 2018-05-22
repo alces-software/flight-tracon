@@ -9,14 +9,14 @@
 require 'open3'
 
 #
-# Run the `fly` command described by the given `fly_params`.
+# Run the `fly` command described by the given `fly_command`.
 #
 module Tracon
   class FlyRunner
     attr_reader :stdout, :stderr
 
-    def initialize(fly_params)
-      @fly_params = fly_params
+    def initialize(fly_command)
+      @fly_command = fly_command
     end
 
     def perform
@@ -29,8 +29,8 @@ module Tracon
     end
 
     def launch_with_popen3
-      cmd = @fly_params.cmd
-      env = @fly_params.env
+      cmd = @fly_command.cmd
+      env = @fly_command.env
       @exit_status = Open3.popen3(env, *cmd) do |stdin, stdout, stderr, wait_thr|
         stdin.close
         @stdout = stdout.read
@@ -40,7 +40,7 @@ module Tracon
     end
 
     def log_params
-      puts "Running command #{@fly_params.sanitized_cmd.inspect} in env #{@fly_params.env.inspect}"
+      puts "Running command #{@fly_command.sanitized_cmd.inspect} in env #{@fly_command.env.inspect}"
     end
   end
 end
