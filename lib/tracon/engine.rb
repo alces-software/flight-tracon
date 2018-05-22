@@ -86,14 +86,6 @@ module Tracon
         @errors = []
       end
 
-      def queue
-        {
-          min: @min,
-          max: @max,
-          desired: @desired
-        }
-      end
-
       def valid?
         if Engine.in_progress?(@cluster)
           @errors << 'operation in progress'
@@ -203,14 +195,6 @@ module Tracon
         @max = params[:max].to_i
         @max = @desired if @desired > @max
         @errors = []
-      end
-
-      def queue
-        {
-          min: @min,
-          max: @max,
-          desired: @desired
-        }
       end
 
       def valid?
