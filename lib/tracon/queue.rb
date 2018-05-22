@@ -141,14 +141,14 @@ module Tracon
       block.call unless block.nil?
     end
 
-    def create(desired, min, max, template_set=nil, &block)
-      parameter_dir = FlyQueueBuilder.new(self, desired, min, max).perform
+    def create(desired, min, max, fly_params={}, &block)
       fly_config = FlyConfig.new(
         @cluster,
         self,
-        parameter_dir: parameter_dir,
-        template_set: template_set
+        fly_params: fly_params,
       )
+      parameter_dir = FlyQueueBuilder.new(self, desired, min, max, fly_config).perform
+      fly_config.parameter_dir = parameter_dir
       fly_command = FlyConfigSerializer::CreateQueueSerializer.new(fly_config).serialize
       runner = FlyRunner.new(fly_command)
       run_fly(runner, &block)

@@ -3,11 +3,12 @@ require 'yaml'
 
 module Tracon
   class FlyQueueBuilder
-    def initialize(queue, desired, min, max)
+    def initialize(queue, desired, min, max, fly_config)
       @queue = queue
       @desired = desired
       @min = min
       @max = max
+      @fly_config = fly_config
     end
 
     def perform
@@ -47,7 +48,8 @@ module Tracon
     end
 
     def create_parameter_directory
-      cmd = [ENV['FLY_EXE_PATH'], '--create-parameter-directory', parameter_dir]
+      fly_exe_path = @fly_config.fly_executable_path
+      cmd = [fly_exe_path, '--create-parameter-directory', parameter_dir]
       puts "Creating fly parameter directory: #{cmd.inspect}"
       exit_status = Open3.popen3(*cmd) do |stdin, stdout, stderr, wait_thr|
         stdin.close
