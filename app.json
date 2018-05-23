@@ -4,7 +4,7 @@
   "repository": "https://github.com/alces-software/flight-tracon",
   "scripts": {
     "dokku": {
-      "predeploy": "wget -q $FLY_DOWNLOAD_URL --output-document $FLY_EXE_PATH ; chmod +x $FLY_EXE_PATH"
+      "predeploy": "/app/bin/predeploy.sh"
     }
   }
 }

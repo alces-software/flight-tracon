@@ -1,6 +1,7 @@
 require 'tracon/fly_config'
-require 'tracon/fly_runner'
+require 'tracon/fly_config_serializer'
 require 'tracon/fly_queue_builder'
+require 'tracon/fly_runner'
 
 module Tracon
   class Queue
@@ -138,29 +139,32 @@ module Tracon
     def update(desired, min, max, &block)
       AWS.update_queue(queue_data, desired, min, max)
       block.call unless block.nil?
-      # XXX
-      # FlyRunner.new('modq', nil, fly_config).perform
     end
 
-    def create(desired, min, max, &block)
-      parameter_dir = FlyQueueBuilder.new(self, desired, min, max).perform
-      runner = FlyRunner.new('addq', parameter_dir, fly_config)
+    def create(desired, min, max, fly_params={}, &block)
+      fly_config = FlyConfig.new(
+        @cluster,
+        self,
+        fly_params: fly_params,
+      )
+      parameter_dir = FlyQueueBuilder.new(self, desired, min, max, fly_config).perform
+      fly_config.parameter_dir = parameter_dir
+      fly_command = FlyConfigSerializer::CreateQueueSerializer.new(fly_config).serialize
+      runner = FlyRunner.new(fly_command)
       run_fly(runner, &block)
     end
 
     def destroy(skip_engine_update: false, &block)
+      fly_config = FlyConfig.new(@cluster, self)
+      fly_command = FlyConfigSerializer::DestroyQueueSerializer.new(fly_config).serialize
       run_fly(
-        FlyRunner.new('delq', nil, fly_config),
+        FlyRunner.new(fly_command),
         skip_engine_update: skip_engine_update,
         &block
       )
     end
 
     private
-    def fly_config
-      FlyConfig.new(@cluster, self)
-    end
-
     def queue_data
       @queue_data ||= AWS.queue(@cluster.domain, @cluster.qualified_name, @name)
     end
@@ -176,7 +180,6 @@ module Tracon
           runner.perform
           puts runner.stdout
           puts runner.stderr
-          puts runner.arn
           block.call unless block.nil?
         rescue
           STDERR.puts $!.message

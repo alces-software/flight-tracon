@@ -3,11 +3,12 @@ require 'yaml'
 
 module Tracon
   class FlyQueueBuilder
-    def initialize(queue, desired, min, max)
+    def initialize(queue, desired, min, max, fly_config)
       @queue = queue
       @desired = desired
       @min = min
       @max = max
+      @fly_config = fly_config
     end
 
     def perform
@@ -26,7 +27,7 @@ module Tracon
     def merge_overrides
       puts "Merging overrides for 'cluster-compute' parameters"
       params = YAML.load_file(File.join(parameter_dir, "cluster-compute.yml"))
-      new_params = params.merge(overrides)
+      new_params = params.merge(overrides.slice(*params.keys))
       File.write(File.join(@parameter_dir, "cluster-compute.yml.bak"), params.to_yaml)
       File.write(File.join(@parameter_dir, "cluster-compute.yml"), new_params.to_yaml)
     end
@@ -47,7 +48,8 @@ module Tracon
     end
 
     def create_parameter_directory
-      cmd = [ENV['FLY_EXE_PATH'], '--create-parameter-directory', parameter_dir]
+      fly_exe_path = @fly_config.fly_executable_path
+      cmd = [fly_exe_path, '--create-parameter-directory', parameter_dir]
       puts "Creating fly parameter directory: #{cmd.inspect}"
       exit_status = Open3.popen3(*cmd) do |stdin, stdout, stderr, wait_thr|
         stdin.close
