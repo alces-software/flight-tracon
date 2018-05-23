@@ -40,15 +40,21 @@ module Tracon
     end
 
     def launch_cluster
-      @launch_cluster ||= JSONAPI.load_launch_cluster(@cluster).resource
+      return @launch_cluster if defined? @launch_cluster
+      document = JSONAPI.load_launch_cluster(@cluster)
+      @launch_cluster = document.nil? ? nil : document.resource
     end
 
     def owner
-      @owner ||= launch_cluster.load_relationship(:owner).resource
+      return @owner if defined? @owner
+      document = launch_cluster.load_relationship(:owner)
+      @owner = document.nil? ? nil : document.resource
     end
 
     def payment
-      @payment ||= launch_cluster.load_relationship(:payment).resource
+      return @payment if defined? @payment
+      document = launch_cluster.load_relationship(:payment)
+      @payment = document.nil? ? nil : document.resource
     end
 
     def validate_owner_has_sufficient_compute_units
