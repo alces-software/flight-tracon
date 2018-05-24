@@ -10,7 +10,7 @@ module Tracon
 
         case data
         when nil
-          puts "Unable to create JSONAPI::Resource: no data in response document #{document.inspect}"
+          puts "Unable to create JSONAPI::Resource: no data in response document #{doc.inspect}"
         when Array
           @resources = data.map {|datum| Resource.new(datum, self) }
         else
